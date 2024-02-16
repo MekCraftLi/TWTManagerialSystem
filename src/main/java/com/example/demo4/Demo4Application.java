@@ -1,13 +1,14 @@
 package com.example.demo4;
 
 import org.junit.runner.RunWith;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 
 @SpringBootApplication
-
+@MapperScan("com.example.demo4.mapper")
 public class Demo4Application {
 
     public static void main(String[] args) {
