@@ -1,11 +1,9 @@
 package com.example.demo4.Service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.demo4.Service.FileService;
 import com.example.demo4.exception.exceptions.UploadFailedException;
 import com.example.demo4.mapper.UserMapper;
-import com.example.demo4.pojo.Status;
 import com.example.demo4.pojo.User;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

@@ -1,10 +1,5 @@
 package com.example.demo4.param;
 
-
-import com.example.demo4.pojo.Gender;
-import com.example.demo4.pojo.Group;
-import com.example.demo4.pojo.Role;
-import com.example.demo4.pojo.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
