@@ -1,6 +1,7 @@
 package com.example.demo4.Service;
 
 import com.example.demo4.pojo.Model.LoginModel;
+import com.example.demo4.pojo.Model.UserListModel;
 import org.springframework.ui.Model;
 import com.example.demo4.param.CngPswdParam;
 import com.example.demo4.param.LoginParam;
@@ -28,6 +29,16 @@ public interface UserService {
     String cngPswd(CngPswdParam cngPswdParam);
 
     User getUserById(Long id);
+
+    List<User> getUserList();
+
+    String delUserById(Long id);
+
+    String ResetPaswdById(Long id);
+
+    String ChangeRoleById(Long id);
+
+    String CleanUsersById(String[] ids);
 
 //    String delUser(LoginParam loginParam);
 

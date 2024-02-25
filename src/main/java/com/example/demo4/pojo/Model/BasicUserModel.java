@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -19,5 +21,6 @@ public class BasicUserModel {
     private Group group;
     private Role role;
     private Status status;
+    private Timestamp joinTime;
     private String imgUrl;
 }

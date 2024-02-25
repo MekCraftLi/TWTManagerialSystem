@@ -2,6 +2,7 @@ package com.example.demo4.Service.impl;
 
 import com.example.demo4.pojo.Model.BasicUserModel;
 import com.example.demo4.pojo.Model.LoginModel;
+import com.example.demo4.pojo.Model.UserListModel;
 import com.example.demo4.utils.JwtUtil;
 import org.springframework.ui.Model;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -98,7 +99,7 @@ public class UserServiceImpl implements UserService {
         if (userResult == null) {
             throw new NameErrorException("用户名错误");
         } else if (Objects.equals(userResult.getPassword(), loginParam.getPassword())) {
-            if (userResult.getJobStatus() == Status.ON_JOB) {
+            if (!userResult.getDeleted()) {
 
 
                 /*正常登录后执行代码 开始*/
@@ -125,7 +126,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<BasicUserModel> basicUserInfo() {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-//        queryWrapper.eq("job_status", Status.ON_JOB);
+        queryWrapper.eq("deleted", false);
         List<User> userListResult = userMapper.selectList(queryWrapper);
 
         List<BasicUserModel> basicUserListResult = new ArrayList<>();
@@ -137,6 +138,7 @@ public class UserServiceImpl implements UserService {
                     user.getWorkGroup(),
                     user.getWorkRole(),
                     user.getJobStatus(),
+                    user.getJoinTime(),
                     user.getImgUrl()
                     )
             );
@@ -225,6 +227,15 @@ public class UserServiceImpl implements UserService {
         return userResult;
     }
 
+    @Override
+    public List<User> getUserList() {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("job_status", Status.ON_JOB);
+        List<User> userListResult = userMapper.selectList(queryWrapper);
+        return userListResult;
+
+    }
+
 
 //    @Override
 //    public String delUser(LoginParam loginParam) {
@@ -253,5 +264,94 @@ public class UserServiceImpl implements UserService {
 //        }
 //    }
 
+/*
+注销用户
+ */
+
+    public String delUserById(Long id) throws BaseException{
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id);
+        User userResult = userMapper.selectOne(updateWrapper);
+
+        if (userResult == null) {
+            throw new NameErrorException("发送用户id错误，请更新用户列表");
+        } else if (!userResult.getDeleted()) {
+                User user = new User();
+                user = userResult;
+                user.setDeleted(true);
+                userMapper.update(user, updateWrapper);
+        } else {
+            throw new DeletedUserException("已删除的用户");
+        }
+
+        return "用户" + userResult.getName() + "已删除";
+
+    }
+
+    @Override
+    public String ResetPaswdById(Long id) {
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id);
+        User userResult = userMapper.selectOne(updateWrapper);
+
+        if (userResult == null) {
+            throw new NameErrorException("发送用户id错误，请更新用户列表");
+        } else if (!userResult.getDeleted()) {
+            User user = new User();
+            user = userResult;
+            user.setPassword("TWT123456");
+            userMapper.update(user, updateWrapper);
+        } else {
+            throw new DeletedUserException("已删除的用户");
+        }
+
+        return "用户" + userResult.getName() + "密码已重置";
+
+    }
+
+    @Override
+    public String ChangeRoleById(Long id) {
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id);
+        User userResult = userMapper.selectOne(updateWrapper);
+        String temp = new String();
+
+        if (userResult == null) {
+            throw new NameErrorException("发送用户id错误，请更新用户列表");
+        } else if (!userResult.getDeleted()) {
+            User user = new User();
+            user = userResult;
+
+            temp = userResult.getAuthority();
+            if(temp.equals("manager"))
+            {
+                throw new AuthorityError("工作室负责人用户不能更改权限");
+            } else if(temp.equals("admin")) {
+                user.setAuthority("user");
+            } else if(temp.equals("user")) {
+                user.setAuthority("admin");
+            } else {
+                throw new AuthorityError("未定义过的权限,权限输入有误");
+            }
+
+            temp = user.getAuthority();
+            userMapper.update(user, updateWrapper);
+        } else {
+            throw new DeletedUserException("已删除的用户");
+        }
+
+        return "用户" + userResult.getName() + "权限已更改为" + temp;
+    }
+
+    @Override
+    public String CleanUsersById(String[] ids) {
+        for(String id : ids)
+        {
+            userMapper.deleteById(id);
+        }
+
+
+        return "删除完成";
+    }
 
 }

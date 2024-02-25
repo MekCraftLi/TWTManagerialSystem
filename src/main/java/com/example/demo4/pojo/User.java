@@ -26,6 +26,7 @@ public class User {
     private Timestamp dateOfBirth;
     private Group workGroup;
     private Role workRole;
+    private String authority;
     private String studentId;
     private String school;
     private String qq;
@@ -37,4 +38,6 @@ public class User {
     private String programExperience;
     private String hobby;
     private String imgUrl;
+
+    private Boolean deleted;//软删除
 }

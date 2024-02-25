@@ -41,7 +41,7 @@ public class JwtUtil {
         payload.put("id", user.getId());
         payload.put("username", user.getUserName());
         payload.put("password", user.getPassword());
-        payload.put("role", user.getWorkRole());
+        payload.put("role", user.getAuthority());
         return Jwts.builder()
                 .setClaims(payload)
                 .setIssuedAt(new Date())

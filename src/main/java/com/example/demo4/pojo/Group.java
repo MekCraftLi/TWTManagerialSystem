@@ -29,16 +29,27 @@ public enum Group implements BaseEnum{
 //    }
 
     private static HashMap<Integer,Group> groupMap = new HashMap<>();
+    private static HashMap<String,Group> stringGroupMap = new HashMap<>();
     //利用静态代码块，在new的时候，将这些字段加载进来
     static {
         for (Group group : Group.values()) {
             groupMap.put(group.getState(),group);
+            stringGroupMap.put(group.getGroup(),group);
         }
     }
 
     //通过这个方法，可以取到状态（0,1,2）对应的enum,然后将这个enum返回
     public static Group getValue(Integer value){
         Group group = groupMap.get(value);
+        if(group == null) {
+            throw new UndefinedEnumValue("No element matches in enum Group " + value);
+        }
+        return group;
+    }
+
+    public static Group getValue(String value){
+        System.out.println(value);
+        Group group = stringGroupMap.get(value);
         if(group == null) {
             throw new UndefinedEnumValue("No element matches in enum Group " + value);
         }
