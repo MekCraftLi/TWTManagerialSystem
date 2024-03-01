@@ -1,12 +1,8 @@
 package com.example.demo4.Service;
 
+import com.example.demo4.param.*;
 import com.example.demo4.pojo.Model.LoginModel;
-import com.example.demo4.pojo.Model.UserListModel;
 import org.springframework.ui.Model;
-import com.example.demo4.param.CngPswdParam;
-import com.example.demo4.param.LoginParam;
-import com.example.demo4.param.RegistParam;
-import com.example.demo4.param.UpdateInfoParam;
 import com.example.demo4.pojo.User;
 import com.example.demo4.pojo.Model.BasicUserModel;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +35,8 @@ public interface UserService {
     String ChangeRoleById(Long id);
 
     String CleanUsersById(String[] ids);
+
+    String RegisterByAdmin(AdminRegistParam adminRegistParam);
 
 //    String delUser(LoginParam loginParam);
 

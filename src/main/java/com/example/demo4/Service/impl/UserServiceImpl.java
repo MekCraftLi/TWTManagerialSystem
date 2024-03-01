@@ -1,8 +1,8 @@
 package com.example.demo4.Service.impl;
 
+import com.example.demo4.param.*;
 import com.example.demo4.pojo.Model.BasicUserModel;
 import com.example.demo4.pojo.Model.LoginModel;
-import com.example.demo4.pojo.Model.UserListModel;
 import com.example.demo4.utils.JwtUtil;
 import org.springframework.ui.Model;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -10,10 +10,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.demo4.Service.UserService;
 import com.example.demo4.exception.exceptions.*;
 import com.example.demo4.mapper.UserMapper;
-import com.example.demo4.param.CngPswdParam;
-import com.example.demo4.param.LoginParam;
-import com.example.demo4.param.RegistParam;
-import com.example.demo4.param.UpdateInfoParam;
 import com.example.demo4.pojo.*;
 import com.example.demo4.exception.exceptions.NameOccupiedException;
 import com.example.demo4.exception.exceptions.BaseException;
@@ -223,16 +219,14 @@ public class UserServiceImpl implements UserService {
     public User getUserById(Long id) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id);
-        User userResult = userMapper.selectOne(queryWrapper);
-        return userResult;
+        return userMapper.selectOne(queryWrapper);
     }
 
     @Override
     public List<User> getUserList() {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
 //        queryWrapper.eq("job_status", Status.ON_JOB);
-        List<User> userListResult = userMapper.selectList(queryWrapper);
-        return userListResult;
+        return userMapper.selectList(queryWrapper);
 
     }
 
@@ -276,8 +270,7 @@ public class UserServiceImpl implements UserService {
         if (userResult == null) {
             throw new NameErrorException("发送用户id错误，请更新用户列表");
         } else if (!userResult.getDeleted()) {
-                User user = new User();
-                user = userResult;
+                User user = userResult;
                 user.setDeleted(true);
                 userMapper.update(user, updateWrapper);
         } else {
@@ -297,8 +290,7 @@ public class UserServiceImpl implements UserService {
         if (userResult == null) {
             throw new NameErrorException("发送用户id错误，请更新用户列表");
         } else if (!userResult.getDeleted()) {
-            User user = new User();
-            user = userResult;
+            User user = userResult;
             user.setPassword("TWT123456");
             userMapper.update(user, updateWrapper);
         } else {
@@ -314,24 +306,19 @@ public class UserServiceImpl implements UserService {
         UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",id);
         User userResult = userMapper.selectOne(updateWrapper);
-        String temp = new String();
+        String temp;
 
         if (userResult == null) {
             throw new NameErrorException("发送用户id错误，请更新用户列表");
         } else if (!userResult.getDeleted()) {
-            User user = new User();
-            user = userResult;
+            User user =  userResult;
 
             temp = userResult.getAuthority();
-            if(temp.equals("manager"))
-            {
-                throw new AuthorityError("工作室负责人用户不能更改权限");
-            } else if(temp.equals("admin")) {
-                user.setAuthority("user");
-            } else if(temp.equals("user")) {
-                user.setAuthority("admin");
-            } else {
-                throw new AuthorityError("未定义过的权限,权限输入有误");
+            switch (temp) {
+                case "manager" -> throw new AuthorityError("工作室负责人用户不能更改权限");
+                case "admin" -> user.setAuthority("user");
+                case "user" -> user.setAuthority("admin");
+                default -> throw new AuthorityError("未定义过的权限,权限输入有误");
             }
 
             temp = user.getAuthority();
@@ -352,6 +339,48 @@ public class UserServiceImpl implements UserService {
 
 
         return "删除完成";
+    }
+
+    @Override
+    public String RegisterByAdmin(AdminRegistParam adminRegistParam) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_name", adminRegistParam.getStudentId());
+
+        User userResult = userMapper.selectOne(queryWrapper);
+        System.out.println(adminRegistParam.getAuthority());
+
+        if (userResult == null) {
+
+            //获取当前时间戳
+            Timestamp tm = new Timestamp(System.currentTimeMillis());
+
+            userMapper.insert(User.builder()
+                    .userName(adminRegistParam.getStudentId())
+                    .name(adminRegistParam.getName())
+                    .password("TWT1234156")
+                    .joinTime(tm)
+                    .jobStatus(Status.ON_JOB)
+                    .authority(adminRegistParam.getAuthority())
+                    .studentId(adminRegistParam.getStudentId())
+                    .build());
+
+        } else if(userResult.getJobStatus() == Status.EXIT) {
+
+            UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("user_name",adminRegistParam.getStudentId());
+            User user = new User();
+
+            user.setJobStatus(Status.ON_JOB);
+            user.setPassword("TWT123456");
+
+            userMapper.update(user, updateWrapper);
+
+        } else {
+            //报错
+            throw new NameOccupiedException("用户名被占用");
+        }
+
+        return "用户" + adminRegistParam.getName() + "注册成功";
     }
 
 }

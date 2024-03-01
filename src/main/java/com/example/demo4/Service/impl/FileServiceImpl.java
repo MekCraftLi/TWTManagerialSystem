@@ -2,7 +2,7 @@ package com.example.demo4.Service.impl;
 
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.exception.ExcelAnalysisException;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.demo4.exception.exceptions.ExcelError;
 import com.example.demo4.pojo.*;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.*;
 
 @Service
@@ -26,8 +25,7 @@ public class FileServiceImpl implements FileService {
 
     public Timestamp getTimestamp(String str) {
         try {
-            Timestamp timestamp = Timestamp.valueOf(str);
-            return timestamp;
+            return Timestamp.valueOf(str);
         } catch(IllegalArgumentException e) {
             throw new ExcelError("表格中加入时间或离开时间输入格式有误，正确格式为YYYY-MM-DD HH:mm:SS");
         }
@@ -54,15 +52,15 @@ public class FileServiceImpl implements FileService {
 
         String realPath = "E:\\Web\\img";
         File folder=new File(realPath);
-        if(!folder.isDirectory()){
-            folder.mkdirs();
-        }
-        String oldname = multipartfile.getOriginalFilename();
-        String newname = UUID.randomUUID().toString()+oldname.substring(oldname.lastIndexOf("."),oldname.length());
+        if(!folder.isDirectory()) folder.mkdirs();
+        String oldName = multipartfile.getOriginalFilename();
+        String newName = null;
+        if (oldName != null)
+            newName = UUID.randomUUID() + oldName.substring(oldName.lastIndexOf("."), oldName.length());
         try {
-            multipartfile.transferTo(new File(folder, newname));
+            multipartfile.transferTo(new File(folder, newName));
             //System.out.println(new File(folder, newname).getAbsolutePath());//输出（上传文件）保存的绝对路径
-            String filePath = realPath+'\\'+newname;
+            String filePath = realPath+'\\'+newName;
 
             //更改头像路径
             user.setImgUrl(filePath);
@@ -76,25 +74,27 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String uploadXlsx(MultipartFile file) throws IOException, ParseException {
+    public String uploadXlsx(MultipartFile file) throws IOException {
         List<UserFile> userList = null;
-        String nullUserList = null;
+        StringBuilder nullUserList = null;
 
-        try {
             userList = EasyExcel.read(file.getInputStream())
                     .head(UserFile.class)
                     .sheet()
+                    .headRowNumber(0)
                     .doReadSync();
-        } catch (ExcelAnalysisException e) {
-            e.printStackTrace();
-            }
 
+        if(userList == null)
+        {
+            throw new ExcelError("文件为空");
+        }
         for(UserFile userFile : userList) {
+
             UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
             updateWrapper.eq("name",userFile.getName());
             User user = userMapper.selectOne(updateWrapper);
             if (user == null) {
-                nullUserList += ( " " + userFile.getName());
+                nullUserList.append(" ").append(userFile.getName());
             } else {
                 user.setName(userFile.getName());
                 user.setWorkGroup(Group.getValue(userFile.getWorkGroup()));
@@ -119,5 +119,68 @@ public class FileServiceImpl implements FileService {
         } else {
             return "成员" + nullUserList + "未注册";
         }
+    }
+
+    @Override
+    public String registerUplaod(MultipartFile file) throws IOException {
+        List<RegistFile> userList = null;
+        StringBuilder nullUserList = null;
+
+
+            userList = EasyExcel.read(file.getInputStream())
+                    .head(RegistFile.class)
+                    .sheet()
+                    .headRowNumber(0)
+                    .doReadSync();
+
+        if(userList == null)
+        {
+            throw new ExcelError("文件为空");
+        }
+        for(RegistFile userFile : userList) {
+
+
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_name", userFile.getStudentId());
+
+            User userResult = userMapper.selectOne(queryWrapper);
+            if (userResult == null) {
+
+                //获取当前时间戳
+                Timestamp tm = new Timestamp(System.currentTimeMillis());
+
+
+                userMapper.insert(User.builder()
+                        .userName(userFile.getStudentId())
+                        .name(userFile.getName())
+                        .password("TWT1234156")
+                        .joinTime(tm)
+                        .jobStatus(Status.ON_JOB)
+                        .studentId(userFile.getStudentId())
+                        .build());
+
+            } else if(userResult.getJobStatus() == Status.EXIT) {
+
+                UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("user_name",userFile.getStudentId());
+                User user = new User();
+
+                user.setJobStatus(Status.ON_JOB);
+                user.setPassword("TWT123456");
+
+                userMapper.update(user, updateWrapper);
+
+            } else {
+                //报错
+               nullUserList.append(' ').append(userFile.getName());
+            }
+        }
+
+        if(nullUserList == null) {
+            return "批量注册成功";
+        } else {
+            return "成员" + nullUserList + "已被注册";
+        }
+
     }
 }

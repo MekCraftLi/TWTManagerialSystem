@@ -2,6 +2,7 @@ package com.example.demo4.controller;
 
 
 import com.example.demo4.exception.exceptions.BaseException;
+import com.example.demo4.param.*;
 import com.example.demo4.pojo.Model.LoginModel;
 import com.example.demo4.utils.JwtUtil;
 import jakarta.servlet.ServletRequest;
@@ -10,10 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import com.example.demo4.Service.impl.UserServiceImpl;
 import com.example.demo4.exception.Result;
-import com.example.demo4.param.CngPswdParam;
-import com.example.demo4.param.LoginParam;
-import com.example.demo4.param.RegistParam;
-import com.example.demo4.param.UpdateInfoParam;
 import com.example.demo4.pojo.Model.BasicUserModel;
 import com.example.demo4.pojo.User;
 import jakarta.annotation.Resource;
@@ -28,8 +25,6 @@ public class UserController {
     @Resource
     UserServiceImpl userService;
 
-    @Resource
-    private JwtUtil jwtUtil;
 
     @Value("${jwt.name}")
     private String tokenName;
@@ -164,6 +159,19 @@ public class UserController {
     public Result<String> CleanUsersById(@RequestBody String[] ids){
         return Result.ok(userService.CleanUsersById(ids));
     }
+
+/*
+管理员注册入口
+管理员权限
+ */
+
+    @PreAuthorize("hasAnyAuthority('manager', 'admin')")
+    @PostMapping("/admin/register")
+    public Result<String> RegisterByAdmin(AdminRegistParam adminRegistParam)
+    {
+        return Result.ok(userService.RegisterByAdmin(adminRegistParam));
+    }
+
 
 
 
