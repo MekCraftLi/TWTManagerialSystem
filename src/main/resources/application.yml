@@ -5,6 +5,6 @@ spring:
     username: root
     password: 1291
 jwt:
-  name: Authorization
+  name: token
   secret-key: 19260817192608171926081719260817
   expiration-time: 604800000

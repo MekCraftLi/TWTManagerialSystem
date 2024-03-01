@@ -18,15 +18,12 @@ import com.example.demo4.pojo.Model.BasicUserModel;
 import com.example.demo4.pojo.User;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-
+@CrossOrigin(origins = "*")
 public class UserController {
     @Resource
     UserServiceImpl userService;
@@ -167,6 +164,8 @@ public class UserController {
     public Result<String> CleanUsersById(@RequestBody String[] ids){
         return Result.ok(userService.CleanUsersById(ids));
     }
+
+
 
 
 }
